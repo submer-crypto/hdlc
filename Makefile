@@ -22,7 +22,7 @@ lint:
 	$(PYTHON) -m flake8 hdlc test
 
 test:
-	$(PYTHON) -m pytest test
+	$(PYTHON) -m pytest -s test
 
 $(ENVIRONMENT):
 	$(PYTHON) -m venv $(ENVIRONMENT)

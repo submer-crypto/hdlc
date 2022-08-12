@@ -1,1 +1,1 @@
-from .hdlc import Receiver, Sender
+from .hdlc import Receiver, Sender, protocol

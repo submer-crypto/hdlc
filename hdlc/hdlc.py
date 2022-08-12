@@ -7,6 +7,8 @@ SUPERVISORY_RECEIVE_NOT_READY = 0x02
 SUPERVISORY_REJECT = 0x01
 SUPERVISORY_SELECTIVE_REJECT = 0x03
 
+_BUFFER_0 = bytearray(0)
+
 _FLAG_BYTE = 0x7E
 _ESCAPE_BYTE = 0x7D
 _FCS_INITIAL = 0xFFFF
@@ -215,9 +217,9 @@ def decode_control(address, value):
         return UFrame(address, unnumbered_type, poll_final)
 
 class Receiver:
-    def __init__(self, address=0xFF, buffer_length=128):
-        self.address = address
+    def __init__(self, buffer_length=128, handle_frame=None):
         self.buffer = bytearray(buffer_length)
+        self._handle_frame = handle_frame
         self.length = 0
 
     @property
@@ -234,7 +236,7 @@ class Receiver:
         copy(buffer, self.buffer, offset, self.length, length)
         self.length += length
 
-    def read(self, information_buffer):
+    def read_frame(self, information_buffer):
         while True:
             discard_length, information_length, frame, valid = decode_frame(
                 self.buffer, self.length, information_buffer)
@@ -243,24 +245,20 @@ class Receiver:
                 self.length = self.length - discard_length
                 copy(self.buffer, self.buffer, discard_length, 0, self.length)
 
-            if frame is not None and self.address == frame.address:
-                if (frame.frame_type == FRAME_SUPERVISORY
-                        and frame.supervisory_type == SUPERVISORY_RECEIVE_READY and valid):
-                    # ack received
-                    pass
-                elif (frame.frame_type == FRAME_SUPERVISORY
-                        and frame.supervisory_type == SUPERVISORY_SELECTIVE_REJECT and valid):
-                    # resend frame
-                    pass
-                elif frame.frame_type == FRAME_INFORMATION and not valid:
-                    # send nack
-                    pass
-                elif frame.frame_type == FRAME_INFORMATION and valid:
-                    # send ack
-                    return information_length
+            if frame is not None:
+                return (information_length, frame, valid)
 
             if discard_length == 0:
-                return 0
+                return (0, None, False)
+
+    def read(self, information_buffer):
+        while True:
+            information_length, frame, valid = self.read_frame(information_buffer)
+
+            if frame is not None and self._handle_frame is not None:
+                information_length = self._handle_frame(information_buffer, information_length, frame, valid)
+
+            return information_length
 
 class Sender:
     class WriteItem:
@@ -270,7 +268,7 @@ class Sender:
             self.age_ms = 0
             self.write_count = 0
 
-    def __init__(self, write_retries=1, write_timeout_ms=500, buffer_length=128):
+    def __init__(self, buffer_length=128, write_retries=1, write_timeout_ms=500):
         self.write_retries = write_retries
         self.write_timeout_ms = write_timeout_ms
         self.buffer = bytearray(buffer_length)
@@ -282,7 +280,7 @@ class Sender:
     def available_length(self):
         return len(self.buffer) - self.length
 
-    def write_frame(self, frame, buffer, offset=0, length=None):
+    def write_frame(self, frame, buffer=_BUFFER_0, offset=0, length=None):
         if length is None:
             length = len(buffer) - offset
 
@@ -293,8 +291,8 @@ class Sender:
         self.frames.append(Sender.WriteItem(length, frame))
         self.length += length
 
-    def write(self, buffer, offset=0, length=None, address=0xFF, poll_final=True):
-        frame = IFrame(address, 0, poll_final, self.sequence_number)
+    def write(self, buffer, offset=0, length=None, address=0xFF, receive_sequence_number=0, poll_final=True):
+        frame = IFrame(address, receive_sequence_number, poll_final, self.sequence_number)
         self.sequence_number = (self.sequence_number + 1) % 8
         return self.write_frame(frame, buffer, offset, length)
 
@@ -322,38 +320,47 @@ class Sender:
 
         return 0
 
+    def remove_frame(self, frame):
+        if len(self.frames) > 0:
+            item = self.frames[0]
+
+            if (item.frame.frame_type == FRAME_INFORMATION
+                    and item.frame.send_sequence_number == frame.receive_sequence_number - 1):
+                self._remove_frame()
+
     def _remove_frame(self):
         item = self.frames.pop(0)
         self.length = self.length - item.length
         copy(self.buffer, self.buffer, item.length, 0, self.length)
 
-def HDLC(max_frame_length=0, ack_timeout_ms=0):
-    return Receiver(), Sender()
+def protocol(master, buffer_length=128, write_timeout_ms=500, write_retries=1, address=0xFF):
+    expect_sequence_number = 0
 
-receiver, sender = HDLC()
+    def handle_frame(information_buffer, information_length, frame, valid):
+        nonlocal expect_sequence_number
 
-receiver.write(b'~\xff\x12hello world\xf2\x06~~garbage~~~\xff\x12hello world\xf2\x06~')
+        if master or frame.address == address:
+            if (frame.frame_type == FRAME_SUPERVISORY
+                    and frame.supervisory_type == SUPERVISORY_RECEIVE_READY and valid):
+                sender.remove_frame(frame)
+            elif (frame.frame_type == FRAME_SUPERVISORY
+                    and frame.supervisory_type == SUPERVISORY_SELECTIVE_REJECT and valid):
+                # The frame will be resent after timeout is reached
+                pass
+            elif frame.frame_type == FRAME_INFORMATION:
+                if valid and frame.send_sequence_number == expect_sequence_number:
+                    expect_sequence_number = (expect_sequence_number + 1) % 8
+                    response_frame = SFrame(frame.address, expect_sequence_number, False, SUPERVISORY_RECEIVE_READY)
+                else:
+                    response_frame = SFrame(frame.address, expect_sequence_number, True, SUPERVISORY_SELECTIVE_REJECT)
+                    information_length = 0
 
-print('-- 1', r := receiver.read(b := bytearray(128)), b[0:r])
-print('-- 2', r := receiver.read(b := bytearray(128)), b[0:r])
-print('-- 3', r := receiver.read(b := bytearray(128)), b[0:r])
+                sender.write_frame(response_frame)
+                return information_length
 
-receiver.write(b'~\xff\x12hello')
+        return 0
 
-print('-- 4', r := receiver.read(b := bytearray(128)), b[0:r])
+    receiver = Receiver(buffer_length, handle_frame)
+    sender = Sender(buffer_length, write_retries, write_timeout_ms)
 
-receiver.write(b' world\xf2\x06~')
-
-print('-- 5', r := receiver.read(b := bytearray(128)), b[0:r])
-
-print('==============')
-
-print('-- 0', r := sender.read(b := bytearray(128)), b[0:r])
-
-sender.write(b'hello world')
-sender.write(b'he11o\x7ewor1d', address=0x31, poll_final=False)
-
-print('-- 1', r := sender.read(b := bytearray(128)), b[0:r])
-print('-- 2', r := sender.read(b := bytearray(128), 200), b[0:r])
-print('-- 3', r := sender.read(b := bytearray(128), 301), b[0:r])
-print('-- 4', r := sender.read(b := bytearray(128), 501), b[0:r])
+    return receiver, sender
