@@ -3,7 +3,7 @@ name: Test
 on: push
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,8 +17,7 @@ jobs:
 
       - name: Set up environment
         run: |
-          make virtual
-          $(make virtual-activate)
+          python3 -m pip install --upgrade pip
           make requirements-install
 
       - name: Lint
