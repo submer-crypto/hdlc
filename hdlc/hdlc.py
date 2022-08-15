@@ -61,7 +61,6 @@ class Frame:
         self.address = address
         self.poll_final = poll_final
         self.frame_type = frame_type
-        self.information = None
 
 class IFrame(Frame):
     def __init__(self, address, receive_sequence_number, poll_final, send_sequence_number):
