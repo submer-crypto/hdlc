@@ -215,6 +215,12 @@ def decode_control(address, value):
         poll_final = True if (value >> 4) & 0x01 == 1 else False
         return UFrame(address, unnumbered_type, poll_final)
 
+class HdlcError(Exception):
+    pass
+
+class TimeoutError(HdlcError):
+    pass
+
 class Receiver:
     def __init__(self, buffer_length=128, handle_frame=None):
         self.buffer = bytearray(buffer_length)
@@ -310,9 +316,13 @@ class Sender:
                     item.age_ms = 0
                     item.write_count += 1
 
+            if item.write_count > self.write_retries + 1:
+                self._remove_frame()
+                raise TimeoutError('Did not receive ack within timeout')
+
             frame_length = encode_frame(item.frame, self.buffer, item.length, frame_buffer)
 
-            if item.frame.frame_type != FRAME_INFORMATION or item.write_count > self.write_retries:
+            if item.frame.frame_type != FRAME_INFORMATION:
                 self._remove_frame()
 
             return frame_length

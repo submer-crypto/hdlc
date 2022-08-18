@@ -99,7 +99,7 @@ def test_receive_reject():
 
     assert read == 10
     assert buffer[0:10] == b'~\xaaptest\xe6\xb0~'
-    assert len(sender.frames) == 0
+    assert len(sender.frames) == 1
 
     read = sender.read(buffer)
 

@@ -1,4 +1,4 @@
-from hdlc import Sender
+from hdlc import TimeoutError, Sender
 import pytest
 
 def test_write_overflow():
@@ -58,11 +58,12 @@ def test_write_read_after_timeout():
 
     assert read == 10
     assert buffer[0:10] == b'~\xaaptest\xe6\xb0~'
+    assert len(sender.frames) == 1
+
+    with pytest.raises(TimeoutError, match='Did not receive ack within timeout'):
+        sender.read(buffer, delta_ms=150)
+
     assert len(sender.frames) == 0
-
-    read = sender.read(buffer)
-
-    assert read == 0
     assert sender.length == 0
     assert sender.available_length == 64
 
@@ -93,11 +94,12 @@ def test_write_read_multiple_after_timeout():
 
     assert read == 10
     assert buffer[0:10] == b'~\xaaptest\xe6\xb0~'
+    assert len(sender.frames) == 1
+
+    with pytest.raises(TimeoutError, match='Did not receive ack within timeout'):
+        sender.read(buffer, delta_ms=100)
+
     assert len(sender.frames) == 0
-
-    read = sender.read(buffer)
-
-    assert read == 0
     assert sender.length == 0
     assert sender.available_length == 64
 
@@ -125,7 +127,11 @@ def test_multiple_write_read():
 
     assert read == 12
     assert buffer[0:12] == b'~\xaaptest 1\xbc\x04~'
-    assert len(sender.frames) == 1
+    assert len(sender.frames) == 2
+
+    with pytest.raises(TimeoutError, match='Did not receive ack within timeout'):
+        sender.read(buffer, delta_ms=150)
+
     assert sender.length == 6
     assert sender.available_length == 58
 
@@ -141,12 +147,10 @@ def test_multiple_write_read():
 
     assert read == 12
     assert buffer[0:12] == b'~\xaartest 2\x9c\x01~'
-    assert len(sender.frames) == 0
-    assert sender.length == 0
-    assert sender.available_length == 64
+    assert len(sender.frames) == 1
 
-    read = sender.read(buffer)
+    with pytest.raises(TimeoutError, match='Did not receive ack within timeout'):
+        sender.read(buffer, delta_ms=150)
 
-    assert read == 0
     assert sender.length == 0
     assert sender.available_length == 64
