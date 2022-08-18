@@ -102,7 +102,7 @@ def escape(value, buffer, offset):
     buffer[offset] = value
     return 1
 
-def encode_frame(frame, buffer, length, frame_buffer):
+def encode_frame(frame, buffer, offset, length, frame_buffer):
     frame_index = 1
     fcs = _FCS_INITIAL
 
@@ -117,7 +117,7 @@ def encode_frame(frame, buffer, length, frame_buffer):
     frame_index += escape(value, frame_buffer, frame_index)
 
     for i in range(length):
-        value = buffer[i]
+        value = buffer[offset + i]
         fcs = crc16(fcs, value)
         frame_index += escape(value, frame_buffer, frame_index)
 
@@ -302,8 +302,22 @@ class Sender:
         return self.write_frame(frame, buffer, offset, length)
 
     def read(self, frame_buffer, delta_ms=0):
-        if len(self.frames) > 0:
-            item = self.frames[0]
+        index = -1
+        offset = 0
+
+        for i, item in enumerate(self.frames):
+            if item.frame.frame_type != FRAME_INFORMATION:
+                index = i
+                break
+
+            offset += item.length
+
+        if index < 0 and len(self.frames) > 0:
+            index = 0
+            offset = 0
+
+        if index >= 0:
+            item = self.frames[index]
 
             if item.write_count == 0:
                 item.write_count += 1
@@ -317,13 +331,13 @@ class Sender:
                     item.write_count += 1
 
             if item.write_count > self.write_retries + 1:
-                self._remove_frame()
+                self._remove_frame(index, offset)
                 raise TimeoutError('Did not receive ack within timeout')
 
-            frame_length = encode_frame(item.frame, self.buffer, item.length, frame_buffer)
+            frame_length = encode_frame(item.frame, self.buffer, offset, item.length, frame_buffer)
 
             if item.frame.frame_type != FRAME_INFORMATION:
-                self._remove_frame()
+                self._remove_frame(index, offset)
 
             return frame_length
 
@@ -335,12 +349,12 @@ class Sender:
 
             if (item.frame.frame_type == FRAME_INFORMATION
                     and item.frame.send_sequence_number == frame.receive_sequence_number - 1):
-                self._remove_frame()
+                self._remove_frame(0, 0)
 
-    def _remove_frame(self):
-        item = self.frames.pop(0)
+    def _remove_frame(self, i, offset):
+        item = self.frames.pop(i)
         self.length = self.length - item.length
-        copy(self.buffer, self.buffer, item.length, 0, self.length)
+        copy(self.buffer, self.buffer, offset + item.length, offset, self.length)
 
 def protocol(master, buffer_length=128, write_timeout_ms=500, write_retries=1, address=0xFF):
     expect_sequence_number = 0
