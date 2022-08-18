@@ -227,3 +227,21 @@ def test_garbage_middle_write_read_raw():
     assert not valid
     assert receiver.length == 1
     assert receiver.available_length == 63
+
+def test_garbage_only_write_read():
+    receiver = Receiver(buffer_length=64)
+    buffer = bytearray(64)
+
+    assert receiver.length == 0
+    assert receiver.available_length == 64
+
+    receiver.write(b'garbage')
+
+    assert receiver.length == 7
+    assert receiver.available_length == 57
+
+    read = receiver.read(buffer)
+
+    assert read == 0
+    assert receiver.length == 0
+    assert receiver.available_length == 64

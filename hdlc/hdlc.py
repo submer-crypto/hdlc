@@ -71,7 +71,7 @@ class IFrame(Frame):
 
     def __repr__(self):
         return (f'IFrame({hex(self.address)}, {self.receive_sequence_number}, '
-                f'{self.poll_final}, {self.send_sequence_number})')
+                + f'{self.poll_final}, {self.send_sequence_number})')
 
 class SFrame(Frame):
     def __init__(self, address, receive_sequence_number, poll_final, supervisory_type):
@@ -82,7 +82,7 @@ class SFrame(Frame):
 
     def __repr__(self):
         return (f'SFrame({hex(self.address)}, {self.receive_sequence_number}, '
-                f'{self.poll_final}, {hex(self.supervisory_type)})')
+                + f'{self.poll_final}, {hex(self.supervisory_type)})')
 
 class UFrame(Frame):
     def __init__(self, address, unnumbered_type, poll_final):
