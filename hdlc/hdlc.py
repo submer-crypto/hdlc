@@ -1,3 +1,5 @@
+import heapq
+
 FRAME_INFORMATION = 0
 FRAME_SUPERVISORY = 1
 FRAME_UNNUMBERED = 2
@@ -6,6 +8,18 @@ SUPERVISORY_RECEIVE_READY = 0x00
 SUPERVISORY_RECEIVE_NOT_READY = 0x02
 SUPERVISORY_REJECT = 0x01
 SUPERVISORY_SELECTIVE_REJECT = 0x03
+
+UNNUMBERED_DISCONNECTED_MODE = 0x03
+UNNUMBERED_ACKNOWLEDGE = 0x0C
+UNNUMBERED_SET_NORMAL_RESPONSE_MODE = 0x08
+UNNUMBERED_SET_ASYNCHRONOUS_RESPONSE_MODE = 0x07
+UNNUMBERED_SET_ASYNCHRONOUS_BALANCED_MODE = 0x07
+UNNUMBERED_DISCONNECT = 0x04
+UNNUMBERED_REQUEST_DISCONNECT = 0x04
+UNNUMBERED_SET_INITIALIZATION_MODE = 0x09
+UNNUMBERED_REQUEST_INITIALIZATION_MODE = 0x01
+UNNUMBERED_FRAME_REJECT_RESPONSE = 0x11
+UNNUMBERED_RESET = 0x0B
 
 _BUFFER_0 = bytearray(0)
 
@@ -55,6 +69,13 @@ def crc16(acc, value):
 def copy(source, destination, source_offset, destination_offset, length):
     for i in range(length):
         destination[destination_offset + i] = source[source_offset + i]
+
+def heappop(heap, i):
+    item = heap[i]
+    heap[i] = heap[-1]
+    heap.pop()
+    heapq.heapify(heap)
+    return item
 
 class Frame:
     def __init__(self, address, poll_final, frame_type):
@@ -257,21 +278,55 @@ class Receiver:
                 return (0, None, False)
 
     def read(self, information_buffer):
+        raise NotImplementedError()
+
+class ProtocolReceiver(Receiver):
+    def __init__(self, sender, master, address, buffer_length=128):
+        super().__init__(buffer_length)
+        self.sender = sender
+        self.master = master
+        self.address = address
+        self.sequence_number = 0
+
+    def read(self, information_buffer):
         while True:
             information_length, frame, valid = self.read_frame(information_buffer)
 
-            if frame is not None and self._handle_frame is not None:
-                information_length = self._handle_frame(information_buffer, information_length, frame, valid)
+            if frame is None:
+                return 0
 
-            return information_length
+            if self.master or frame.address == self.address:
+                if (frame.frame_type == FRAME_SUPERVISORY
+                        and frame.supervisory_type == SUPERVISORY_RECEIVE_READY and valid):
+                    self.sender.remove_frame(frame)
+                elif (frame.frame_type == FRAME_SUPERVISORY
+                        and frame.supervisory_type == SUPERVISORY_SELECTIVE_REJECT and valid):
+                    # The frame will be resent after timeout is reached
+                    pass
+                elif frame.frame_type == FRAME_INFORMATION:
+                    if valid and frame.send_sequence_number == self.sequence_number:
+                        self.sequence_number = (self.sequence_number + 1) % 8
+                        response_frame = SFrame(frame.address, self.sequence_number, False, SUPERVISORY_RECEIVE_READY)
+                    else:
+                        response_frame = SFrame(frame.address, self.sequence_number, True, SUPERVISORY_SELECTIVE_REJECT)
+                        information_length = 0
+
+                    self.sender.write_frame(response_frame, priority=1)
+                    return information_length
 
 class Sender:
-    class WriteItem:
-        def __init__(self, length, frame):
+    class _WriteItem:
+        def __init__(self, offset, length, frame, priority, retry):
+            self.offset = offset
             self.length = length
             self.frame = frame
+            self.priority = priority
+            self.retry = retry
             self.age_ms = 0
             self.write_count = 0
+
+        def __lt__(self, other):
+            return -self.priority < -other.priority
 
     def __init__(self, buffer_length=128, write_retries=1, write_timeout_ms=500):
         self.write_retries = write_retries
@@ -285,7 +340,7 @@ class Sender:
     def available_length(self):
         return len(self.buffer) - self.length
 
-    def write_frame(self, frame, buffer=_BUFFER_0, offset=0, length=None):
+    def write_frame(self, frame, buffer=_BUFFER_0, offset=0, length=None, priority=0, retry=False):
         if length is None:
             length = len(buffer) - offset
 
@@ -293,31 +348,17 @@ class Sender:
             raise ValueError('Buffer length exceeded')
 
         copy(buffer, self.buffer, offset, self.length, length)
-        self.frames.append(Sender.WriteItem(length, frame))
+        heapq.heappush(self.frames, Sender._WriteItem(self.length, length, frame, priority, retry))
         self.length += length
 
     def write(self, buffer, offset=0, length=None, address=0xFF, receive_sequence_number=0, poll_final=True):
         frame = IFrame(address, receive_sequence_number, poll_final, self.sequence_number)
         self.sequence_number = (self.sequence_number + 1) % 8
-        return self.write_frame(frame, buffer, offset, length)
+        return self.write_frame(frame, buffer, offset, length, 0, True)
 
     def read(self, frame_buffer, delta_ms=0):
-        index = -1
-        offset = 0
-
-        for i, item in enumerate(self.frames):
-            if item.frame.frame_type != FRAME_INFORMATION:
-                index = i
-                break
-
-            offset += item.length
-
-        if index < 0 and len(self.frames) > 0:
-            index = 0
-            offset = 0
-
-        if index >= 0:
-            item = self.frames[index]
+        if len(self.frames) > 0:
+            item = self.frames[0]
 
             if item.write_count == 0:
                 item.write_count += 1
@@ -331,13 +372,13 @@ class Sender:
                     item.write_count += 1
 
             if item.write_count > self.write_retries + 1:
-                self._remove_frame(index, offset)
+                self._remove_frame(0)
                 raise TimeoutError('Did not receive ack within timeout')
 
-            frame_length = encode_frame(item.frame, self.buffer, offset, item.length, frame_buffer)
+            frame_length = encode_frame(item.frame, self.buffer, item.offset, item.length, frame_buffer)
 
-            if item.frame.frame_type != FRAME_INFORMATION:
-                self._remove_frame(index, offset)
+            if not item.retry:
+                self._remove_frame(0)
 
             return frame_length
 
@@ -349,41 +390,15 @@ class Sender:
 
             if (item.frame.frame_type == FRAME_INFORMATION
                     and item.frame.send_sequence_number == frame.receive_sequence_number - 1):
-                self._remove_frame(0, 0)
+                self._remove_frame(0)
 
-    def _remove_frame(self, i, offset):
-        item = self.frames.pop(i)
+    def _remove_frame(self, i):
+        item = heappop(self.frames, i)
         self.length = self.length - item.length
-        copy(self.buffer, self.buffer, offset + item.length, offset, self.length)
+        copy(self.buffer, self.buffer, item.offset + item.length, item.offset, self.length - item.offset)
 
 def protocol(master, buffer_length=128, write_timeout_ms=500, write_retries=1, address=0xFF):
-    expect_sequence_number = 0
-
-    def handle_frame(information_buffer, information_length, frame, valid):
-        nonlocal expect_sequence_number
-
-        if master or frame.address == address:
-            if (frame.frame_type == FRAME_SUPERVISORY
-                    and frame.supervisory_type == SUPERVISORY_RECEIVE_READY and valid):
-                sender.remove_frame(frame)
-            elif (frame.frame_type == FRAME_SUPERVISORY
-                    and frame.supervisory_type == SUPERVISORY_SELECTIVE_REJECT and valid):
-                # The frame will be resent after timeout is reached
-                pass
-            elif frame.frame_type == FRAME_INFORMATION:
-                if valid and frame.send_sequence_number == expect_sequence_number:
-                    expect_sequence_number = (expect_sequence_number + 1) % 8
-                    response_frame = SFrame(frame.address, expect_sequence_number, False, SUPERVISORY_RECEIVE_READY)
-                else:
-                    response_frame = SFrame(frame.address, expect_sequence_number, True, SUPERVISORY_SELECTIVE_REJECT)
-                    information_length = 0
-
-                sender.write_frame(response_frame)
-                return information_length
-
-        return 0
-
-    receiver = Receiver(buffer_length, handle_frame)
     sender = Sender(buffer_length, write_retries, write_timeout_ms)
+    receiver = ProtocolReceiver(sender, master, address, buffer_length)
 
     return receiver, sender

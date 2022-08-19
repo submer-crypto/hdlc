@@ -174,7 +174,7 @@ def test_write_read_ready():
     assert buffer[0:6] == b'~\xaa!Cm~'
     assert len(sender.frames) == 0
 
-def test_write_read_ready_after_information():
+def test_write_read_ready_with_priority():
     sender = Sender(buffer_length=64)
     buffer = bytearray(64)
 
@@ -182,7 +182,7 @@ def test_write_read_ready_after_information():
     assert sender.available_length == 64
 
     sender.write(b'test', address=0xAA, receive_sequence_number=3, poll_final=True)
-    sender.write_frame(SFrame(0xAA, 1, False, SUPERVISORY_RECEIVE_READY))
+    sender.write_frame(SFrame(0xAA, 1, False, SUPERVISORY_RECEIVE_READY), priority=1)
 
     assert sender.length == 4
     assert sender.available_length == 60
