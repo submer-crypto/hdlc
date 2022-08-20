@@ -21,6 +21,10 @@ UNNUMBERED_REQUEST_INITIALIZATION_MODE = 0x01
 UNNUMBERED_FRAME_REJECT_RESPONSE = 0x11
 UNNUMBERED_RESET = 0x0B
 
+NORMAL_RESPONSE_MODE = 0x00
+ASYNCHRONOUS_RESPONSE_MODE = 0x01
+ASYNCHRONOUS_BALANCED_MODE = 0x02
+
 _BUFFER_0 = bytearray(0)
 
 _FLAG_BYTE = 0x7E
@@ -167,7 +171,7 @@ def encode_control(frame):
         value |= (frame.supervisory_type & 0x03) << 2
         value |= 0x01
     else:
-        value |= (frame.unnumbered_type & 0x1c) << 3
+        value |= (frame.unnumbered_type & 0x1C) << 3
         value |= (1 if frame.poll_final else 0) << 4
         value |= (frame.unnumbered_type & 0x03) << 2
         value |= 0x03
@@ -232,9 +236,19 @@ def decode_control(address, value):
         supervisory_type = (value >> 2) & 0x03
         return SFrame(address, receive_sequence_number, poll_final, supervisory_type)
     else:
-        unnumbered_type = ((value >> 3) & 0x1c) | ((value >> 2) & 0x03)
+        unnumbered_type = ((value >> 3) & 0x1C) | ((value >> 2) & 0x03)
         poll_final = True if (value >> 4) & 0x01 == 1 else False
         return UFrame(address, unnumbered_type, poll_final)
+
+def to_unnumbered_type(mode):
+    if mode == NORMAL_RESPONSE_MODE:
+        return UNNUMBERED_SET_NORMAL_RESPONSE_MODE
+    elif mode == ASYNCHRONOUS_RESPONSE_MODE:
+        return UNNUMBERED_SET_ASYNCHRONOUS_RESPONSE_MODE
+    elif mode == ASYNCHRONOUS_BALANCED_MODE:
+        return UNNUMBERED_SET_ASYNCHRONOUS_BALANCED_MODE
+
+    raise ValueError('Unknown operation mode')
 
 class HdlcError(Exception):
     pass
@@ -243,14 +257,16 @@ class TimeoutError(HdlcError):
     pass
 
 class Receiver:
-    def __init__(self, buffer_length=128, handle_frame=None):
+    def __init__(self, buffer_length=128):
         self.buffer = bytearray(buffer_length)
-        self._handle_frame = handle_frame
         self.length = 0
 
     @property
     def available_length(self):
         return len(self.buffer) - self.length
+
+    def reset(self):
+        self.length = 0
 
     def write(self, buffer, offset=0, length=None):
         if length is None:
@@ -281,12 +297,22 @@ class Receiver:
         raise NotImplementedError()
 
 class ProtocolReceiver(Receiver):
-    def __init__(self, sender, master, address, buffer_length=128):
+    def __init__(self, sender, master, address, mode, buffer_length=128):
         super().__init__(buffer_length)
         self.sender = sender
         self.master = master
         self.address = address
+        self.mode = mode
         self.sequence_number = 0
+        self.initialized = False
+
+        if master:
+            sender.write_frame(UFrame(address, to_unnumbered_type(mode), True), priority=3, retry=True)
+
+    def reset(self):
+        super().reset()
+        self.sequence_number = 0
+        self.initialized = False
 
     def read(self, information_buffer):
         while True:
@@ -296,9 +322,26 @@ class ProtocolReceiver(Receiver):
                 return 0
 
             if self.master or frame.address == self.address:
-                if (frame.frame_type == FRAME_SUPERVISORY
+                if not self.initialized and self.master:
+                    if (frame.frame_type == FRAME_UNNUMBERED
+                            and frame.unnumbered_type == UNNUMBERED_ACKNOWLEDGE and valid):
+                        self.sender.remove_unnumbered_frame(to_unnumbered_type(self.mode))
+                        self.initialized = True
+                elif (frame.frame_type == FRAME_UNNUMBERED
+                        and (frame.unnumbered_type == UNNUMBERED_SET_NORMAL_RESPONSE_MODE
+                            or frame.unnumbered_type == UNNUMBERED_SET_ASYNCHRONOUS_RESPONSE_MODE
+                            or frame.unnumbered_type == UNNUMBERED_SET_ASYNCHRONOUS_BALANCED_MODE)
+                        and valid):
+                    self.reset()
+                    self.sender.reset()
+                    self.sender.write_frame(UFrame(frame.address, UNNUMBERED_ACKNOWLEDGE, True), priority=1)
+                    self.initialized = True
+                elif not self.initialized:
+                    if valid:
+                        self.sender.write_frame(UFrame(frame.address, UNNUMBERED_DISCONNECTED_MODE, True), priority=1)
+                elif (frame.frame_type == FRAME_SUPERVISORY
                         and frame.supervisory_type == SUPERVISORY_RECEIVE_READY and valid):
-                    self.sender.remove_frame(frame)
+                    self.sender.remove_information_frame(frame.receive_sequence_number)
                 elif (frame.frame_type == FRAME_SUPERVISORY
                         and frame.supervisory_type == SUPERVISORY_SELECTIVE_REJECT and valid):
                     # The frame will be resent after timeout is reached
@@ -339,6 +382,11 @@ class Sender:
     @property
     def available_length(self):
         return len(self.buffer) - self.length
+
+    def reset(self):
+        self.length = 0
+        self.frames = []
+        self.sequence_number = 0
 
     def write_frame(self, frame, buffer=_BUFFER_0, offset=0, length=None, priority=0, retry=False):
         if length is None:
@@ -384,21 +432,39 @@ class Sender:
 
         return 0
 
-    def remove_frame(self, frame):
-        if len(self.frames) > 0:
-            item = self.frames[0]
-
+    def remove_information_frame(self, receive_sequence_number):
+        for i, item in enumerate(self.frames):
             if (item.frame.frame_type == FRAME_INFORMATION
-                    and item.frame.send_sequence_number == frame.receive_sequence_number - 1):
-                self._remove_frame(0)
+                    and item.write_count > 0
+                    and item.frame.send_sequence_number == receive_sequence_number - 1):
+                self._remove_frame(i)
+                return
+
+    def remove_unnumbered_frame(self, unnumbered_type):
+        for i, item in enumerate(self.frames):
+            if (item.frame.frame_type == FRAME_UNNUMBERED
+                    and item.write_count > 0
+                    and item.frame.unnumbered_type == unnumbered_type):
+                self._remove_frame(i)
+                return
 
     def _remove_frame(self, i):
         item = heappop(self.frames, i)
         self.length = self.length - item.length
         copy(self.buffer, self.buffer, item.offset + item.length, item.offset, self.length - item.offset)
 
-def protocol(master, buffer_length=128, write_timeout_ms=500, write_retries=1, address=0xFF):
-    sender = Sender(buffer_length, write_retries, write_timeout_ms)
-    receiver = ProtocolReceiver(sender, master, address, buffer_length)
+class ProtocolSender(Sender):
+    def __init__(self, address, buffer_length=128, write_retries=1, write_timeout_ms=500):
+        super().__init__(buffer_length, write_retries, write_timeout_ms)
+        self.address = address
 
+    def write(self, buffer, offset=0, length=None, address=None, receive_sequence_number=0, poll_final=True):
+        if address is None:
+            address = self.address
+
+        return super().write(buffer, offset, length, address, receive_sequence_number, poll_final)
+
+def protocol(master, buffer_length=128, write_timeout_ms=500, write_retries=1, address=0xFF, mode=NORMAL_RESPONSE_MODE):
+    sender = ProtocolSender(address, buffer_length, write_retries, write_timeout_ms)
+    receiver = ProtocolReceiver(sender, master, address, mode, buffer_length)
     return receiver, sender
