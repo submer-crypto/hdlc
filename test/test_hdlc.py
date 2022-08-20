@@ -2,7 +2,7 @@ from hdlc import TimeoutError, protocol, NORMAL_RESPONSE_MODE
 import pytest
 
 def test_handshake_block_send():
-    receiver, sender = protocol(True, write_timeout_ms=100, write_retries=1, address=0xAA, mode=NORMAL_RESPONSE_MODE)
+    receiver, sender = protocol(True, 0xAA, write_timeout_ms=100, write_retries=1, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -42,7 +42,7 @@ def test_handshake_block_send():
     assert len(sender.frames) == 1
 
 def test_handshake_timeout():
-    receiver, sender = protocol(True, write_timeout_ms=100, write_retries=1, address=0xAA, mode=NORMAL_RESPONSE_MODE)
+    receiver, sender = protocol(True, 0xAA, write_timeout_ms=100, write_retries=1, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -74,7 +74,7 @@ def test_handshake_timeout():
     assert len(sender.frames) == 1
 
 def test_receive_valid_frame():
-    receiver, sender = protocol(True, address=0xAA, mode=NORMAL_RESPONSE_MODE)
+    receiver, sender = protocol(True, 0xAA, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -114,7 +114,7 @@ def test_receive_valid_frame():
     assert read == 0
 
 def test_receive_invalid_frame():
-    receiver, sender = protocol(True, address=0xAA, mode=NORMAL_RESPONSE_MODE)
+    receiver, sender = protocol(True, 0xAA, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -153,7 +153,7 @@ def test_receive_invalid_frame():
     assert read == 0
 
 def test_receive_ready():
-    receiver, sender = protocol(True, address=0xAA, mode=NORMAL_RESPONSE_MODE)
+    receiver, sender = protocol(True, 0xAA, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -190,7 +190,7 @@ def test_receive_ready():
     assert read == 0
 
 def test_receive_reject():
-    receiver, sender = protocol(True, write_timeout_ms=100, write_retries=1, address=0xAA, mode=NORMAL_RESPONSE_MODE)
+    receiver, sender = protocol(True, 0xAA, write_timeout_ms=100, write_retries=1, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -238,7 +238,7 @@ def test_receive_reject():
     assert read == 0
 
 def test_slave_disconnect_mode():
-    receiver, sender = protocol(False, address=0xAA)
+    receiver, sender = protocol(False, 0xAA)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -258,7 +258,7 @@ def test_slave_disconnect_mode():
     assert len(sender.frames) == 0
 
 def test_slave_reset():
-    receiver, sender = protocol(False, address=0xAA)
+    receiver, sender = protocol(False, 0xAA)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -309,7 +309,7 @@ def test_slave_reset():
     assert buffer[0:6] == b'~\xaas\xd4\x1c~'
 
 def test_slave_receive_valid_frame():
-    receiver, sender = protocol(False, address=0xAA)
+    receiver, sender = protocol(False, 0xAA)
     buffer = bytearray(128)
 
     assert not receiver.initialized
@@ -348,7 +348,7 @@ def test_slave_receive_valid_frame():
     assert read == 0
 
 def test_slave_receive_valid_frame_with_bad_address():
-    receiver, sender = protocol(False, address=0xBB)
+    receiver, sender = protocol(False, 0xBB)
     buffer = bytearray(128)
 
     assert not receiver.initialized

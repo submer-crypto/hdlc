@@ -464,7 +464,7 @@ class ProtocolSender(Sender):
 
         return super().write(buffer, offset, length, address, receive_sequence_number, poll_final)
 
-def protocol(master, buffer_length=128, write_timeout_ms=500, write_retries=1, address=0xFF, mode=NORMAL_RESPONSE_MODE):
+def protocol(master, address, buffer_length=128, write_timeout_ms=500, write_retries=1, mode=NORMAL_RESPONSE_MODE):
     sender = ProtocolSender(address, buffer_length, write_retries, write_timeout_ms)
     receiver = ProtocolReceiver(sender, master, address, mode, buffer_length)
     return receiver, sender
