@@ -8,7 +8,7 @@ def test_handshake_block_send():
     assert not receiver.initialized
     assert len(sender.frames) == 1
 
-    sender.write(b'test', address=0xAA, receive_sequence_number=3, poll_final=True)
+    sender.write(b'test', receive_sequence_number=3, poll_final=True)
 
     assert len(sender.frames) == 2
 
@@ -48,7 +48,7 @@ def test_handshake_timeout():
     assert not receiver.initialized
     assert len(sender.frames) == 1
 
-    sender.write(b'test', address=0xAA, receive_sequence_number=3, poll_final=True)
+    sender.write(b'test', receive_sequence_number=3, poll_final=True)
 
     assert len(sender.frames) == 2
 
@@ -172,7 +172,7 @@ def test_receive_ready():
     assert len(sender.frames) == 0
     assert receiver.initialized
 
-    sender.write(b'test', address=0xAA, receive_sequence_number=3, poll_final=True)
+    sender.write(b'test', receive_sequence_number=3, poll_final=True)
     read = sender.read(buffer)
 
     assert read == 10
@@ -209,7 +209,7 @@ def test_receive_reject():
     assert len(sender.frames) == 0
     assert receiver.initialized
 
-    sender.write(b'test', address=0xAA, receive_sequence_number=3, poll_final=True)
+    sender.write(b'test', receive_sequence_number=3, poll_final=True)
     read = sender.read(buffer)
 
     assert read == 10
