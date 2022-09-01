@@ -321,7 +321,7 @@ class ProtocolReceiver(Receiver):
             if frame is None:
                 return 0
 
-            if self.master or frame.address == self.address:
+            if frame.address == self.address:
                 if not self.initialized and self.master:
                     if (frame.frame_type == FRAME_UNNUMBERED
                             and frame.unnumbered_type == UNNUMBERED_ACKNOWLEDGE and valid):
@@ -465,6 +465,27 @@ class ProtocolSender(Sender):
         return super().write(buffer, offset, length, address, receive_sequence_number, poll_final)
 
 def protocol(master, address, buffer_length=128, write_timeout_ms=500, write_retries=1, mode=NORMAL_RESPONSE_MODE):
+    """Create a receiver and sender pair for respectively decoding and encoding HDLC frames.
+    The pair is linked, the sender might have queued up messages pending depending on what is written
+    to the receiver.
+
+    :param master: If the instance should act as a master node and initiate the communication
+        with the remote node.
+    :type master: bool
+    :param address: If master is True then this specifies the address of the remote slave node
+        (since master nodes don't have explicit addresses). If master is False then this is the address
+        of current slave node.
+    :type address: int
+    :param buffer_length: Length of internal receiver and sender buffers. Writing beyond the specified length
+        will result in an error.
+    :type buffer_length: int
+    :param write_timeout_ms: The write timeout for messages that require acknowledgement, e.g. information frames.
+    :type write_timeout_ms: int
+    :param write_retries: Number of times to retry a message after the initial write has failed. The message will
+        be queued up in the sender again after write_timeout_ms has been reached. If the retry limit is also reached
+        class:`hdlc.TimeoutError` is raised instead.
+    :type write_retries: int
+    """
     sender = ProtocolSender(address, buffer_length, write_retries, write_timeout_ms)
     receiver = ProtocolReceiver(sender, master, address, mode, buffer_length)
     return receiver, sender

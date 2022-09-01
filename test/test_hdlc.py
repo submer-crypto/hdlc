@@ -152,6 +152,39 @@ def test_receive_invalid_frame():
 
     assert read == 0
 
+def test_receive_valid_frame_with_bad_address():
+    receiver, sender = protocol(True, 0xBB, mode=NORMAL_RESPONSE_MODE)
+    buffer = bytearray(128)
+
+    assert not receiver.initialized
+    assert len(sender.frames) == 1
+
+    read = sender.read(buffer)
+
+    assert read == 6
+    assert buffer[0:6] == b'~\xbbS\x9f\xb1~'
+    assert len(sender.frames) == 1
+
+    receiver.write(b'~\xbbs\x9d\x90~')
+    read = receiver.read(buffer)
+
+    assert read == 0
+    assert len(sender.frames) == 0
+    assert receiver.initialized
+
+    receiver.write(b'~\xaaptest\xe6\xb0~')
+
+    assert len(sender.frames) == 0
+
+    read = receiver.read(buffer)
+
+    assert read == 0
+    assert len(sender.frames) == 0
+
+    read = sender.read(buffer)
+
+    assert read == 0
+
 def test_receive_ready():
     receiver, sender = protocol(True, 0xAA, mode=NORMAL_RESPONSE_MODE)
     buffer = bytearray(128)
