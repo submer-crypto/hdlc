@@ -687,7 +687,7 @@ class Sender:
         for i, item in enumerate(self.frames):
             if (item.frame.frame_type == FRAME_INFORMATION
                     and item.write_count > 0
-                    and item.frame.send_sequence_number == receive_sequence_number - 1):
+                    and ((item.frame.send_sequence_number + 1) % 8) == receive_sequence_number):
                 self._remove_frame(i)
                 return
 

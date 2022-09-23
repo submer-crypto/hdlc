@@ -270,6 +270,58 @@ def test_receive_reject():
 
     assert read == 0
 
+def test_receive_valid_frame_with_overflowing_sequence_number():
+    receiver, sender = protocol(True, 0xAA, mode=NORMAL_RESPONSE_MODE)
+    buffer = bytearray(128)
+
+    assert not receiver.initialized
+    assert len(sender.frames) == 1
+
+    read = sender.read(buffer)
+
+    assert read == 6
+    assert buffer[0:6] == b'~\xaaS\xd6=~'
+    assert len(sender.frames) == 1
+
+    receiver.write(b'~\xaas\xd4\x1c~')
+    read = receiver.read(buffer)
+
+    assert read == 0
+    assert len(sender.frames) == 0
+    assert receiver.initialized
+
+    for i in range(8):
+        message = b'test ' + bytes(str(i + 1), encoding='utf8')
+
+        sender.write(message)
+        read = sender.read(buffer)
+
+        assert read == 12
+        assert len(sender.frames) == 1
+
+        # Cheat by writting own message to receiver
+        # so we can get the acknowledge frame
+        receiver.write(buffer, 0, read)
+        read = receiver.read(buffer)
+
+        assert read == 6
+        assert buffer[0:6] == message
+        assert len(sender.frames) == 2
+
+        # Read acknowledge frame
+        read = sender.read(buffer)
+
+        assert read == 6
+        assert len(sender.frames) == 1
+
+        # Write acknowledge frame which removes
+        # the pending information frame from the queue
+        receiver.write(buffer, 0, read)
+        read = receiver.read(buffer)
+
+        assert read == 0
+        assert len(sender.frames) == 0
+
 def test_slave_disconnect_mode():
     receiver, sender = protocol(False, 0xAA)
     buffer = bytearray(128)
