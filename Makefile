@@ -1,7 +1,7 @@
 PYTHON = python3
 ENVIRONMENT = env
 
-.PHONY: virtual virtual-activate virtual-deactivate requirements-install requirements-freeze lint test
+.PHONY: virtual virtual-activate virtual-deactivate requirements-install requirements-freeze lint test docs
 
 virtual: $(ENVIRONMENT)
 
@@ -23,6 +23,9 @@ lint:
 
 test:
 	$(PYTHON) -m pytest -s test
+
+docs:
+	sphinx-build -b html docs docs/_build/html
 
 $(ENVIRONMENT):
 	$(PYTHON) -m venv $(ENVIRONMENT)

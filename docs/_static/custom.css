@@ -1,0 +1,7 @@
+dl.py {
+    margin-bottom: 15px;
+}
+
+dl.py.class, dl.py.exception, dl.py.data, dl.py.function {
+    margin-bottom: 30px;
+}

@@ -1,12 +1,22 @@
 import heapq
 
+#: Information frame type.
 FRAME_INFORMATION = 0
+#: Supervisory frame type.
 FRAME_SUPERVISORY = 1
+#: Unnumbered frame type.
 FRAME_UNNUMBERED = 2
 
+#: Receive ready supervisory type. Used to acknowledge received information frames.
 SUPERVISORY_RECEIVE_READY = 0x00
+#: Receive not ready supervisory type (currently unused).
 SUPERVISORY_RECEIVE_NOT_READY = 0x02
+#: Reject supervisory type. Sent in response to an observered sequence number gap
+#: or invalid information frame. Requesting all information frames
+#: starting from the specified sequence number to be resent (currently unused).
 SUPERVISORY_REJECT = 0x01
+#: Selective reject supervisory type. Same usage as with :const:`hdlc.SUPERVISORY_REJECT` but
+#: only requests the specific information frame to be resent.
 SUPERVISORY_SELECTIVE_REJECT = 0x03
 
 UNNUMBERED_DISCONNECTED_MODE = 0x03
@@ -82,12 +92,42 @@ def heappop(heap, i):
     return item
 
 class Frame:
+    """Base class for specific frame types. All frames have address and the poll-final
+    bit in common.
+
+    :ivar address: 8-bit frame address.
+    :vartype address: int
+    :ivar poll_final: 1-bit poll/final value. Set to true by master when requesting a response from a slave
+        node or when slave has finished transmitting.
+    :vartype poll_final: bool
+    :ivar frame_type: Frame type value. One of :const:`hdlc.FRAME_INFORMATION`, :const:`hdlc.FRAME_SUPERVISORY` or
+        :const:`hdlc.FRAME_UNNUMBERED`.
+    :vartype frame_type: int
+    """
     def __init__(self, address, poll_final, frame_type):
         self.address = address
         self.poll_final = poll_final
         self.frame_type = frame_type
 
 class IFrame(Frame):
+    """Information frames are usually used to transmit data between nodes and are numbered
+    with an incrementing counter to ensure correct order.
+
+    :ivar address: 8-bit frame address.
+    :vartype address: int
+    :ivar receive_sequence_number: 3-bit receive sequence number used to acknowledge receipt of
+        information frames. All frames with sequence number up to but not including this value
+        are acknowledged to have been received (currently unused).
+    :vartype receive_sequence_number: int
+    :ivar poll_final: 1-bit poll/final value. Set to true by master when requesting a response from a slave
+        node or when slave has finished transmitting.
+    :vartype poll_final: bool
+    :ivar send_sequence_number: 3-bit send sequence number used to assure ordering of information frames. It should
+        be incremented (modulo 8) for every successive information frame.
+    :vartype send_sequence_number: int
+    :ivar frame_type: Frame type value, always :const:`hdlc.FRAME_INFORMATION`.
+    :vartype frame_type: int
+    """
     def __init__(self, address, receive_sequence_number, poll_final, send_sequence_number):
         super().__init__(address, poll_final, FRAME_INFORMATION)
 
@@ -99,6 +139,22 @@ class IFrame(Frame):
                 + f'{self.poll_final}, {self.send_sequence_number})')
 
 class SFrame(Frame):
+    """Supervisory frames are used for flow and error control. E.g. acknowledging a received information frame.
+
+    :ivar address: 8-bit frame address.
+    :vartype address: int
+    :ivar receive_sequence_number: 3-bit receive sequence number used to acknowledge receipt of
+        information frames. All frames with sequence number up to but not including this value
+        are acknowledged to have been received (currently unused).
+    :vartype receive_sequence_number: int
+    :ivar poll_final: 1-bit poll/final value. Set to true by master when requesting a response from a slave
+        node or when slave has finished transmitting.
+    :vartype poll_final: bool
+    :ivar supervisory_type: Supervisory frame sub-type. One of :const:`hdlc.SUPERVISORY_*` constants.
+    :vartype supervisory_type: int
+    :ivar frame_type: Frame type value, always :const:`hdlc.FRAME_SUPERVISORY`.
+    :vartype frame_type: int
+    """
     def __init__(self, address, receive_sequence_number, poll_final, supervisory_type):
         super().__init__(address, poll_final, FRAME_SUPERVISORY)
 
@@ -110,6 +166,19 @@ class SFrame(Frame):
                 + f'{self.poll_final}, {hex(self.supervisory_type)})')
 
 class UFrame(Frame):
+    """Unnumbered frames are used for sessesion management, exchanging handshake messages to put both nodes
+    in correct state.
+
+    :ivar address: 8-bit frame address.
+    :vartype address: int
+    :ivar unnumbered_type: Unnumbered frame sub-type. One of :const:`hdlc.UNNUMBERED_*` constants.
+    :vartype unnumbered_type: int
+    :ivar poll_final: 1-bit poll/final value. Set to true by master when requesting a response from a slave
+        node or when slave has finished transmitting.
+    :vartype poll_final: bool
+    :ivar frame_type: Frame type value, always :const:`hdlc.FRAME_UNNUMBERED`.
+    :vartype frame_type: int
+    """
     def __init__(self, address, unnumbered_type, poll_final):
         super().__init__(address, poll_final, FRAME_UNNUMBERED)
 
@@ -251,24 +320,58 @@ def to_unnumbered_type(mode):
     raise ValueError('Unknown operation mode')
 
 class HdlcError(Exception):
+    """Base class for all HDLC errors.
+    """
     pass
 
 class TimeoutError(HdlcError):
+    """Error raised by the :meth:`hdlc.Sender.read` method if a message failed to be
+    sent within the timeout period and retry limit.
+    """
     pass
 
 class Receiver:
+    """Class responsible for decoding HDLC frames. Raw data containing the encoded frames
+    is added to the internal buffer using the :meth:`hdlc.Receiver.write` method. The decoded
+    frames are retrieved with the :meth:`hdlc.Receiver.read_frame` method. Invalid byte
+    sequences are ignored but care should be taken not to write beyond the size of the
+    internal buffer. Check available space with :attr:`hdlc.Receiver.available_length`.
+
+    :param buffer_length: Number of bytes to allocate for the internal buffer.
+    :type buffer_length: int
+
+    :ivar length: Total number of bytes currently in the internal buffer.
+    :vartype length: int
+    """
     def __init__(self, buffer_length=128):
         self.buffer = bytearray(buffer_length)
         self.length = 0
 
     @property
     def available_length(self):
+        """Available space in the internal data buffer.
+        """
         return len(self.buffer) - self.length
 
     def reset(self):
+        """Reset internal state to initial values. Discards any pending data.
+        """
         self.length = 0
 
     def write(self, buffer, offset=0, length=None):
+        """Write the raw data to the internal buffer. The decoded frame is made available
+        by the :meth:`hdlc.Receiver.read` method.
+
+        :param buffer: The raw frame data.
+        :type buffer: bytes
+        :param offset: Byte offset for the data in the buffer.
+        :type offset: int
+        :param length: Length of data in the buffer. Default is rest of buffer from specified offset.
+        :type length: int
+
+        :raises:
+            - :class:`ValueError` - If there is no more space in the internal buffer.
+        """
         if length is None:
             length = len(buffer) - offset
 
@@ -279,6 +382,17 @@ class Receiver:
         self.length += length
 
     def read_frame(self, information_buffer):
+        """Read decoded frame from head of the internal buffer. Data can be added
+        by calling :meth:`hdlc.Receiver.write` method.
+
+        :param information_buffer: Writable buffer used to store the information data of the decoded frame.
+        :type information_buffer: bytes
+
+        :returns: A tuple of length three containing number of bytes stored in the provided information buffer,
+            the decoded frame and a boolean indicating if the checksum is valid. The frame entry may be None
+            if there was not enough data to decode a whole frame.
+        :rtype: tuple(int, :class:`hdlc.Frame`, bool)
+        """
         while True:
             discard_length, information_length, frame, valid = decode_frame(
                 self.buffer, self.length, information_buffer)
@@ -294,9 +408,53 @@ class Receiver:
                 return (0, None, False)
 
     def read(self, information_buffer):
+        """Read the information part of the decoded frame at the head of the internal buffer.
+        Data can be added by calling :meth:`hdlc.Receiver.write` method.
+
+        By default this method raises a :class:`NotImplementedError` and it is up to a subclass
+        to provide an implementation.
+
+        :param information_buffer: Writable buffer used to store the information data of the decoded frame.
+        :type information_buffer: bytes
+
+        :returns: The number of bytes stored in the provided information buffer.
+        :rtype: int
+        """
         raise NotImplementedError()
 
 class ProtocolReceiver(Receiver):
+    """The :func:`hdlc.protocol` function returns an instance of this class. This class extends
+    :class:`hdlc.Receiver` and overrides the :class:`hdlc.Receiver.read` method to implement frame
+    validation and a simple handshake.
+
+    A slave node stays in disconnected mode until it recieves a handshake message from the master and
+    enters normal operation mode. In disconnected mode the slave responds to all messages with a
+    unnumbered frame of type :const:`hdlc.UNNUMBERED_DISCONNECTED_MODE`. The handshake may be sent at
+    any time and will reset the internal state of the slave node to initial values.
+
+    A master node stays in disconnected mode until it receives a unnumbered acknowledge frame
+    from the slave. No supplied data will flow out until the handshake is complete.
+
+    :param sender: A sender instance for writting frames to the remote node.
+    :type sender: :class:`hdlc.Sender`
+    :param master: If the instance should act as a master node and initiate the communication
+        with the remote node.
+    :type master: bool
+    :param address: If master is True then this specifies the address of the remote slave node
+        (since master nodes do not have explicit addresses). If master is False then this is the address
+        of current slave node.
+    :type address: int
+    :param mode: Which link configuration mode to use (currently unused).
+    :type mode: int
+    :param buffer_length: Number of bytes to allocate for the internal buffer.
+    :type buffer_length: int
+
+    :ivar length: Total number of bytes currently in the internal buffer.
+    :vartype length: int
+    :ivar initialized: If the handshake has been performed and the nodes can exchange data
+        using information frames.
+    :vartype initialized: bool
+    """
     def __init__(self, sender, master, address, mode, buffer_length=128):
         super().__init__(buffer_length)
         self.sender = sender
@@ -315,6 +473,20 @@ class ProtocolReceiver(Receiver):
         self.initialized = False
 
     def read(self, information_buffer):
+        """Read the information part of the decoded frame at the head of the internal buffer.
+        Data can be added by calling :meth:`hdlc.Receiver.write` method.
+
+        This implementaiton makes sure the checksum is valid and that the received frame has the
+        correct sequence number and address. This method might push frames to the sender depending
+        on the received data. E.g. an acknowledge frame (a supervisory ready frame) will be added when
+        a valid information frame is received.
+
+        :param information_buffer: Writable buffer used to store the information data of the decoded frame.
+        :type information_buffer: bytes
+
+        :returns: The number of bytes stored in the provided information buffer.
+        :rtype: int
+        """
         while True:
             information_length, frame, valid = self.read_frame(information_buffer)
 
@@ -358,6 +530,8 @@ class ProtocolReceiver(Receiver):
                     return information_length
 
 class Sender:
+    """Class responsible for encoding HDLC frames.
+    """
     class _WriteItem:
         def __init__(self, offset, length, frame, priority, retry):
             self.offset = offset
@@ -381,14 +555,42 @@ class Sender:
 
     @property
     def available_length(self):
+        """Available space in the internal data buffer.
+        """
         return len(self.buffer) - self.length
 
     def reset(self):
+        """Reset internal state to initial values. Discards pending frames and
+        resets the outgoing sequence number.
+        """
         self.length = 0
         self.frames = []
         self.sequence_number = 0
 
     def write_frame(self, frame, buffer=_BUFFER_0, offset=0, length=None, priority=0, retry=False):
+        """Write data to the internal buffer and queue provided frame. The encoded frame is made available
+        by the :meth:`hdlc.Sender.read` method.
+
+        :param frame: The frame to queue.
+        :type frame: :class:`hdlc.Frame`
+        :param buffer: The data to be included in the frame.
+        :type buffer: bytes
+        :param offset: Byte offset for the data in the buffer.
+        :type offset: int
+        :param length: Length of data in the buffer. Default is rest of buffer from specified offset.
+        :type length: int
+        :param priority: A higher number puts the frame at front of the internal queue and will be returned
+            before frames with lower priority when calling the :meth:`hdlc.Sender.read` method.
+        :type priority: int
+        :param retry: If the frame should be held in queue after it has been read. Frames need to
+            be explicitly removed otherwise they stay in the queue indefinitly. A high priority frame
+            which is retryable will block the head of the queue untill it is removed or a higher
+            priority frame is added.
+        :type retry: bool
+
+        :raises:
+            - :class:`ValueError` - If there is no more space in the internal buffer.
+        """
         if length is None:
             length = len(buffer) - offset
 
@@ -400,11 +602,51 @@ class Sender:
         self.length += length
 
     def write(self, buffer, offset=0, length=None, address=0xFF, receive_sequence_number=0, poll_final=True):
+        """Write data to the internal buffer. The data is queued up as information frames and is
+        made available by the :meth:`hdlc.Sender.read` method.
+
+        :param buffer: The data to queue.
+        :type buffer: bytes
+        :param offset: Byte offset for the data in the buffer.
+        :type offset: int
+        :param length: Length of data in the buffer. Default is rest of buffer from specified offset.
+        :type length: int
+        :param address: The address to include in the information frame.
+        :type address: int
+        :param receive_sequence_number: The acknowledge sequence number to include in the information frame.
+            The HDLC protocol specifies providing a receive sequence number of n confirms all previous n - 1
+            frames have been received.
+        :type receive_sequence_number: int
+        :param poll_final: If the poll-final bit should be set in the information frame. In the HDLC protocol the
+            bit is used as a flag to indicate that a slave node is allowed to transmit data.
+        :type poll_final: bool
+
+        :raises:
+            - :class:`ValueError` - If there is no more space in the internal buffer.
+        """
         frame = IFrame(address, receive_sequence_number, poll_final, self.sequence_number)
         self.sequence_number = (self.sequence_number + 1) % 8
         return self.write_frame(frame, buffer, offset, length, 0, True)
 
     def read(self, frame_buffer, delta_ms=0):
+        """Read encoded frame from head of the internal queue. The frame can be queued by calling the :meth:`hdlc.Sender.write`
+        method. The same frame may be returned multiple times if it is retryable.
+
+        :param frame_buffer: Writable buffer used to store the frame in. In worst case every byte in frame
+            needs to be escaped requiring double the amount of space to store the raw data plus additional
+            6 bytes for the framing bytes. The length property holds the number of pending bytes and
+            can be used to calculate the need size of the frame buffer.
+        :type frame_buffer: bytes
+        :param delta_ms: Number of milliseconds elapsed since the last call to this method.
+            Used to determine if a message has timed out and possible should be resent.
+        :type delta_ms: int
+
+        :returns: The number of bytes stored in the provided frame buffer.
+        :rtype: int
+
+        :raises:
+            - :class:`hdlc.TimeoutError` - If a message failed to be sent within the timeout period and retry limit.
+        """
         if len(self.frames) > 0:
             item = self.frames[0]
 
@@ -433,6 +675,15 @@ class Sender:
         return 0
 
     def remove_information_frame(self, receive_sequence_number):
+        """Remove information frame with a sequence number previous to the one provided and which has
+        been read using the :meth:`hdlc.Sender.read` method at least once. This is usually needed
+        when an acknowledge has been received from the remote node and it is no longer necessary to
+        keep the frame in the queue.
+
+        :param receive_sequence_number: Remove queued information frame with a send sequence number
+            previous to the one provided.
+        :type receive_sequence_number: int
+        """
         for i, item in enumerate(self.frames):
             if (item.frame.frame_type == FRAME_INFORMATION
                     and item.write_count > 0
@@ -454,6 +705,10 @@ class Sender:
         copy(self.buffer, self.buffer, item.offset + item.length, item.offset, self.length - item.offset)
 
 class ProtocolSender(Sender):
+    """The :func:`hdlc.protocol` function returns an instance of this class. This class extends
+    :class:`hdlc.Sender` and overrides the default address value in the :meth:`hdlc.Sender.write`
+    method to the provided value in the constructor.
+    """
     def __init__(self, address, buffer_length=128, write_retries=1, write_timeout_ms=500):
         super().__init__(buffer_length, write_retries, write_timeout_ms)
         self.address = address
@@ -473,7 +728,7 @@ def protocol(master, address, buffer_length=128, write_timeout_ms=500, write_ret
         with the remote node.
     :type master: bool
     :param address: If master is True then this specifies the address of the remote slave node
-        (since master nodes don't have explicit addresses). If master is False then this is the address
+        (since master nodes do not have explicit addresses). If master is False then this is the address
         of current slave node.
     :type address: int
     :param buffer_length: Length of internal receiver and sender buffers. Writing beyond the specified length
@@ -483,8 +738,10 @@ def protocol(master, address, buffer_length=128, write_timeout_ms=500, write_ret
     :type write_timeout_ms: int
     :param write_retries: Number of times to retry a message after the initial write has failed. The message will
         be queued up in the sender again after write_timeout_ms has been reached. If the retry limit is also reached
-        class:`hdlc.TimeoutError` is raised instead.
+        :class:`hdlc.TimeoutError` is raised instead.
     :type write_retries: int
+    :param mode: Which link configuration mode to use (currently unused).
+    :type mode: int
     """
     sender = ProtocolSender(address, buffer_length, write_retries, write_timeout_ms)
     receiver = ProtocolReceiver(sender, master, address, mode, buffer_length)
