@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Python HDLC documentation &#8212; HDLC 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-hdlc">
+<span id="python-hdlc-documentation"></span><h1>Python HDLC documentation<a class="headerlink" href="#module-hdlc" title="Link to this heading">¶</a></h1>
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.FRAME_INFORMATION">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">FRAME_INFORMATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#hdlc.FRAME_INFORMATION" title="Link to this definition">¶</a></dt>
+<dd><p>Information frame type.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.FRAME_SUPERVISORY">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">FRAME_SUPERVISORY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#hdlc.FRAME_SUPERVISORY" title="Link to this definition">¶</a></dt>
+<dd><p>Supervisory frame type.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.FRAME_UNNUMBERED">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">FRAME_UNNUMBERED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#hdlc.FRAME_UNNUMBERED" title="Link to this definition">¶</a></dt>
+<dd><p>Unnumbered frame type.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.SUPERVISORY_RECEIVE_READY">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">SUPERVISORY_RECEIVE_READY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#hdlc.SUPERVISORY_RECEIVE_READY" title="Link to this definition">¶</a></dt>
+<dd><p>Receive ready supervisory type. Used to acknowledge received information frames.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.SUPERVISORY_RECEIVE_NOT_READY">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">SUPERVISORY_RECEIVE_NOT_READY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#hdlc.SUPERVISORY_RECEIVE_NOT_READY" title="Link to this definition">¶</a></dt>
+<dd><p>Receive not ready supervisory type (currently unused).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.SUPERVISORY_REJECT">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">SUPERVISORY_REJECT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#hdlc.SUPERVISORY_REJECT" title="Link to this definition">¶</a></dt>
+<dd><p>Reject supervisory type. Sent in response to an observered sequence number gap
+or invalid information frame. Requesting all information frames
+starting from the specified sequence number to be resent (currently unused).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.SUPERVISORY_SELECTIVE_REJECT">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">SUPERVISORY_SELECTIVE_REJECT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#hdlc.SUPERVISORY_SELECTIVE_REJECT" title="Link to this definition">¶</a></dt>
+<dd><p>Selective reject supervisory type. Same usage as with <a class="reference internal" href="#hdlc.SUPERVISORY_REJECT" title="hdlc.SUPERVISORY_REJECT"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.SUPERVISORY_REJECT</span></code></a> but
+only requests the specific information frame to be resent.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.UNNUMBERED_DISCONNECTED_MODE">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">UNNUMBERED_DISCONNECTED_MODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#hdlc.UNNUMBERED_DISCONNECTED_MODE" title="Link to this definition">¶</a></dt>
+<dd><p>Disconnected mode. Sent by the slave when in disconnected mode (default mode on startup)
+in response to all frame requests except a set mode command.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hdlc.UNNUMBERED_ACKNOWLEDGE">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">UNNUMBERED_ACKNOWLEDGE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#hdlc.UNNUMBERED_ACKNOWLEDGE" title="Link to this definition">¶</a></dt>
+<dd><p>Acknowledge mode response. Sent by the slave on an acceptable set mode command,
+indicating the slave has entered normal operation mode.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.Frame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">Frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_final</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Frame" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for specific frame types. All frames have address and the poll-final
+bit in common.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 8-bit frame address.</p></li>
+<li><p><strong>poll_final</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – 1-bit poll/final value. Set to true by master when requesting a response from a slave
+node or when slave has finished transmitting.</p></li>
+<li><p><strong>frame_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Frame type value. One of <a class="reference internal" href="#hdlc.FRAME_INFORMATION" title="hdlc.FRAME_INFORMATION"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.FRAME_INFORMATION</span></code></a>, <a class="reference internal" href="#hdlc.FRAME_SUPERVISORY" title="hdlc.FRAME_SUPERVISORY"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.FRAME_SUPERVISORY</span></code></a> or
+<a class="reference internal" href="#hdlc.FRAME_UNNUMBERED" title="hdlc.FRAME_UNNUMBERED"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.FRAME_UNNUMBERED</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.IFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">IFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receive_sequence_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_final</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_sequence_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.IFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Information frames are usually used to transmit data between nodes and are numbered
+with an incrementing counter to ensure correct order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 8-bit frame address.</p></li>
+<li><p><strong>receive_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 3-bit receive sequence number used to acknowledge receipt of
+information frames. All frames with sequence number up to but not including this value
+are acknowledged to have been received (currently unused).</p></li>
+<li><p><strong>poll_final</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – 1-bit poll/final value. Set to true by master when requesting a response from a slave
+node or when slave has finished transmitting.</p></li>
+<li><p><strong>send_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 3-bit send sequence number used to assure ordering of information frames. It should
+be incremented (modulo 8) for every successive information frame.</p></li>
+<li><p><strong>frame_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Frame type value, always <a class="reference internal" href="#hdlc.FRAME_INFORMATION" title="hdlc.FRAME_INFORMATION"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.FRAME_INFORMATION</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.SFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">SFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receive_sequence_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_final</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supervisory_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.SFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Supervisory frames are used for flow and error control. E.g. acknowledging a received information frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 8-bit frame address.</p></li>
+<li><p><strong>receive_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 3-bit receive sequence number used to acknowledge receipt of
+information frames. All frames with sequence number up to but not including this value
+are acknowledged to have been received (currently unused).</p></li>
+<li><p><strong>poll_final</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – 1-bit poll/final value. Set to true by master when requesting a response from a slave
+node or when slave has finished transmitting.</p></li>
+<li><p><strong>supervisory_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Supervisory frame sub-type. One of <code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.SUPERVISORY_*</span></code> constants.</p></li>
+<li><p><strong>frame_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Frame type value, always <a class="reference internal" href="#hdlc.FRAME_SUPERVISORY" title="hdlc.FRAME_SUPERVISORY"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.FRAME_SUPERVISORY</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.UFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">UFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unnumbered_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_final</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.UFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Unnumbered frames are used for sessesion management, exchanging handshake messages to put both nodes
+in correct state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – 8-bit frame address.</p></li>
+<li><p><strong>unnumbered_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Unnumbered frame sub-type. One of <code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.UNNUMBERED_*</span></code> constants.</p></li>
+<li><p><strong>poll_final</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – 1-bit poll/final value. Set to true by master when requesting a response from a slave
+node or when slave has finished transmitting.</p></li>
+<li><p><strong>frame_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Frame type value, always <a class="reference internal" href="#hdlc.FRAME_UNNUMBERED" title="hdlc.FRAME_UNNUMBERED"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.FRAME_UNNUMBERED</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="hdlc.HdlcError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">HdlcError</span></span><a class="headerlink" href="#hdlc.HdlcError" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for all HDLC errors.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="hdlc.TimeoutError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">TimeoutError</span></span><a class="headerlink" href="#hdlc.TimeoutError" title="Link to this definition">¶</a></dt>
+<dd><p>Error raised by the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method if a message failed to be
+sent within the timeout period and retry limit.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.Receiver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">Receiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Receiver" title="Link to this definition">¶</a></dt>
+<dd><p>Class responsible for decoding HDLC frames. Raw data containing the encoded frames
+is added to the internal buffer using the <a class="reference internal" href="#hdlc.Receiver.write" title="hdlc.Receiver.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.write()</span></code></a> method. The decoded
+frames are retrieved with the <a class="reference internal" href="#hdlc.Receiver.read_frame" title="hdlc.Receiver.read_frame"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.read_frame()</span></code></a> method. Invalid byte
+sequences are ignored but care should be taken not to write beyond the size of the
+internal buffer. Check available space with <a class="reference internal" href="#hdlc.Receiver.available_length" title="hdlc.Receiver.available_length"><code class="xref py py-attr docutils literal notranslate"><span class="pre">hdlc.Receiver.available_length</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>buffer_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of bytes to allocate for the internal buffer.</p>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Total number of bytes currently in the internal buffer.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="hdlc.Receiver.available_length">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">available_length</span></span><a class="headerlink" href="#hdlc.Receiver.available_length" title="Link to this definition">¶</a></dt>
+<dd><p>Available space in the internal data buffer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Receiver.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Receiver.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Reset internal state to initial values. Discards any pending data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Receiver.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Receiver.write" title="Link to this definition">¶</a></dt>
+<dd><p>Write the raw data to the internal buffer. The decoded frame is made available
+by the <a class="reference internal" href="#hdlc.Receiver.read" title="hdlc.Receiver.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – The raw frame data.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Byte offset for the data in the buffer.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of data in the buffer. Default is rest of buffer from specified offset.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> - If there is no more space in the internal buffer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Receiver.read_frame">
+<span class="sig-name descname"><span class="pre">read_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">information_buffer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Receiver.read_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Read decoded frame from head of the internal buffer. Data can be added
+by calling <a class="reference internal" href="#hdlc.Receiver.write" title="hdlc.Receiver.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.write()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>information_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – Writable buffer used to store the information data of the decoded frame.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of length three containing number of bytes stored in the provided information buffer,
+the decoded frame and a boolean indicating if the checksum is valid. The frame entry may be None
+if there was not enough data to decode a whole frame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(int, <a class="reference internal" href="#hdlc.Frame" title="hdlc.Frame"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Frame</span></code></a>, bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Receiver.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">information_buffer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Receiver.read" title="Link to this definition">¶</a></dt>
+<dd><p>Read the information part of the decoded frame at the head of the internal buffer.
+Data can be added by calling <a class="reference internal" href="#hdlc.Receiver.write" title="hdlc.Receiver.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.write()</span></code></a> method.</p>
+<p>By default this method raises a <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a> and it is up to a subclass
+to provide an implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>information_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – Writable buffer used to store the information data of the decoded frame.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bytes stored in the provided information buffer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.ProtocolReceiver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">ProtocolReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolReceiver" title="Link to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#hdlc.protocol" title="hdlc.protocol"><code class="xref py py-func docutils literal notranslate"><span class="pre">hdlc.protocol()</span></code></a> function returns an instance of this class. This class extends
+<a class="reference internal" href="#hdlc.Receiver" title="hdlc.Receiver"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Receiver</span></code></a> and overrides the <a class="reference internal" href="#hdlc.Receiver.read" title="hdlc.Receiver.read"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Receiver.read</span></code></a> method to implement frame
+validation and a simple handshake.</p>
+<p>A slave node stays in disconnected mode until it recieves a handshake message from the master and
+enters normal operation mode. In disconnected mode the slave responds to all messages with a
+unnumbered frame of type <a class="reference internal" href="#hdlc.UNNUMBERED_DISCONNECTED_MODE" title="hdlc.UNNUMBERED_DISCONNECTED_MODE"><code class="xref py py-const docutils literal notranslate"><span class="pre">hdlc.UNNUMBERED_DISCONNECTED_MODE</span></code></a>. The handshake may be sent at
+any time and will reset the internal state of the slave node to initial values.</p>
+<p>A master node stays in disconnected mode until it receives a unnumbered acknowledge frame
+from the slave. No supplied data will flow out until the handshake is complete.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sender</strong> (<a class="reference internal" href="#hdlc.Sender" title="hdlc.Sender"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Sender</span></code></a>) – A sender instance for writting frames to the remote node.</p></li>
+<li><p><strong>master</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the instance should act as a master node and initiate the communication
+with the remote node.</p></li>
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – If master is True then this specifies the address of the remote slave node
+(since master nodes do not have explicit addresses). If master is False then this is the address
+of current slave node.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Which link configuration mode to use (currently unused).</p></li>
+<li><p><strong>buffer_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of bytes to allocate for the internal buffer.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Total number of bytes currently in the internal buffer.</p></li>
+<li><p><strong>initialized</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the handshake has been performed and the nodes can exchange data
+using information frames.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolReceiver.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolReceiver.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Reset internal state to initial values. Discards any pending data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolReceiver.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">information_buffer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolReceiver.read" title="Link to this definition">¶</a></dt>
+<dd><p>Read the information part of the decoded frame at the head of the internal buffer.
+Data can be added by calling <a class="reference internal" href="#hdlc.Receiver.write" title="hdlc.Receiver.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.write()</span></code></a> method.</p>
+<p>This implementaiton makes sure the checksum is valid and that the received frame has the
+correct sequence number and address. This method might push frames to the sender depending
+on the received data. E.g. an acknowledge frame (a supervisory ready frame) will be added when
+a valid information frame is received.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>information_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – Writable buffer used to store the information data of the decoded frame.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bytes stored in the provided information buffer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="hdlc.ProtocolReceiver.available_length">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">available_length</span></span><a class="headerlink" href="#hdlc.ProtocolReceiver.available_length" title="Link to this definition">¶</a></dt>
+<dd><p>Available space in the internal data buffer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolReceiver.read_frame">
+<span class="sig-name descname"><span class="pre">read_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">information_buffer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolReceiver.read_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Read decoded frame from head of the internal buffer. Data can be added
+by calling <a class="reference internal" href="#hdlc.Receiver.write" title="hdlc.Receiver.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.write()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>information_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – Writable buffer used to store the information data of the decoded frame.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of length three containing number of bytes stored in the provided information buffer,
+the decoded frame and a boolean indicating if the checksum is valid. The frame entry may be None
+if there was not enough data to decode a whole frame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(int, <a class="reference internal" href="#hdlc.Frame" title="hdlc.Frame"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Frame</span></code></a>, bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolReceiver.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolReceiver.write" title="Link to this definition">¶</a></dt>
+<dd><p>Write the raw data to the internal buffer. The decoded frame is made available
+by the <a class="reference internal" href="#hdlc.Receiver.read" title="hdlc.Receiver.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Receiver.read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – The raw frame data.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Byte offset for the data in the buffer.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of data in the buffer. Default is rest of buffer from specified offset.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> - If there is no more space in the internal buffer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.Sender">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">Sender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_timeout_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Sender" title="Link to this definition">¶</a></dt>
+<dd><p>Class responsible for encoding HDLC frames.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="hdlc.Sender.available_length">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">available_length</span></span><a class="headerlink" href="#hdlc.Sender.available_length" title="Link to this definition">¶</a></dt>
+<dd><p>Available space in the internal data buffer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Sender.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Sender.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Reset internal state to initial values. Discards pending frames and
+resets the outgoing sequence number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Sender.write_frame">
+<span class="sig-name descname"><span class="pre">write_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">bytearray(b'')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Sender.write_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to the internal buffer and queue provided frame. The encoded frame is made available
+by the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<a class="reference internal" href="#hdlc.Frame" title="hdlc.Frame"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Frame</span></code></a>) – The frame to queue.</p></li>
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – The data to be included in the frame.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Byte offset for the data in the buffer.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of data in the buffer. Default is rest of buffer from specified offset.</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – A higher number puts the frame at front of the internal queue and will be returned
+before frames with lower priority when calling the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method.</p></li>
+<li><p><strong>retry</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the frame should be held in queue after it has been read. Frames need to
+be explicitly removed otherwise they stay in the queue indefinitly. A high priority frame
+which is retryable will block the head of the queue untill it is removed or a higher
+priority frame is added.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> - If there is no more space in the internal buffer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Sender.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">255</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receive_sequence_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_final</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Sender.write" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to the internal buffer. The data is queued up as information frames and is
+made available by the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – The data to queue.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Byte offset for the data in the buffer.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of data in the buffer. Default is rest of buffer from specified offset.</p></li>
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The address to include in the information frame.</p></li>
+<li><p><strong>receive_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The acknowledge sequence number to include in the information frame.
+The HDLC protocol specifies providing a receive sequence number of n confirms all previous n - 1
+frames have been received.</p></li>
+<li><p><strong>poll_final</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the poll-final bit should be set in the information frame. In the HDLC protocol the
+bit is used as a flag to indicate that a slave node is allowed to transmit data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> - If there is no more space in the internal buffer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Sender.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Sender.read" title="Link to this definition">¶</a></dt>
+<dd><p>Read encoded frame from head of the internal queue. The frame can be queued by calling the <a class="reference internal" href="#hdlc.Sender.write" title="hdlc.Sender.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.write()</span></code></a>
+method. The same frame may be returned multiple times if it is retryable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – Writable buffer used to store the frame in. In worst case every byte in frame
+needs to be escaped requiring double the amount of space to store the raw data plus additional
+6 bytes for the framing bytes. The length property holds the number of pending bytes and
+can be used to calculate the need size of the frame buffer.</p></li>
+<li><p><strong>delta_ms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of milliseconds elapsed since the last call to this method.
+Used to determine if a message has timed out and possible should be resent.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bytes stored in the provided frame buffer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#hdlc.TimeoutError" title="hdlc.TimeoutError"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.TimeoutError</span></code></a> - If a message failed to be sent within the timeout period and retry limit.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.Sender.remove_information_frame">
+<span class="sig-name descname"><span class="pre">remove_information_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receive_sequence_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.Sender.remove_information_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Remove information frame with a sequence number previous to the one provided and which has
+been read using the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method at least once. This is usually needed
+when an acknowledge has been received from the remote node and it is no longer necessary to
+keep the frame in the queue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>receive_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Remove queued information frame with a send sequence number
+previous to the one provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">ProtocolSender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_timeout_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolSender" title="Link to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#hdlc.protocol" title="hdlc.protocol"><code class="xref py py-func docutils literal notranslate"><span class="pre">hdlc.protocol()</span></code></a> function returns an instance of this class. This class extends
+<a class="reference internal" href="#hdlc.Sender" title="hdlc.Sender"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Sender</span></code></a> and overrides the default address value in the <a class="reference internal" href="#hdlc.Sender.write" title="hdlc.Sender.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.write()</span></code></a>
+method to the provided value in the constructor.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receive_sequence_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_final</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolSender.write" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to the internal buffer. The data is queued up as information frames and is
+made available by the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – The data to queue.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Byte offset for the data in the buffer.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of data in the buffer. Default is rest of buffer from specified offset.</p></li>
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The address to include in the information frame.</p></li>
+<li><p><strong>receive_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The acknowledge sequence number to include in the information frame.
+The HDLC protocol specifies providing a receive sequence number of n confirms all previous n - 1
+frames have been received.</p></li>
+<li><p><strong>poll_final</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the poll-final bit should be set in the information frame. In the HDLC protocol the
+bit is used as a flag to indicate that a slave node is allowed to transmit data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> - If there is no more space in the internal buffer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender.available_length">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">available_length</span></span><a class="headerlink" href="#hdlc.ProtocolSender.available_length" title="Link to this definition">¶</a></dt>
+<dd><p>Available space in the internal data buffer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolSender.read" title="Link to this definition">¶</a></dt>
+<dd><p>Read encoded frame from head of the internal queue. The frame can be queued by calling the <a class="reference internal" href="#hdlc.Sender.write" title="hdlc.Sender.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.write()</span></code></a>
+method. The same frame may be returned multiple times if it is retryable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – Writable buffer used to store the frame in. In worst case every byte in frame
+needs to be escaped requiring double the amount of space to store the raw data plus additional
+6 bytes for the framing bytes. The length property holds the number of pending bytes and
+can be used to calculate the need size of the frame buffer.</p></li>
+<li><p><strong>delta_ms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of milliseconds elapsed since the last call to this method.
+Used to determine if a message has timed out and possible should be resent.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bytes stored in the provided frame buffer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#hdlc.TimeoutError" title="hdlc.TimeoutError"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.TimeoutError</span></code></a> - If a message failed to be sent within the timeout period and retry limit.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender.remove_information_frame">
+<span class="sig-name descname"><span class="pre">remove_information_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receive_sequence_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolSender.remove_information_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Remove information frame with a sequence number previous to the one provided and which has
+been read using the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method at least once. This is usually needed
+when an acknowledge has been received from the remote node and it is no longer necessary to
+keep the frame in the queue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>receive_sequence_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Remove queued information frame with a send sequence number
+previous to the one provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolSender.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Reset internal state to initial values. Discards pending frames and
+resets the outgoing sequence number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hdlc.ProtocolSender.write_frame">
+<span class="sig-name descname"><span class="pre">write_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">bytearray(b'')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.ProtocolSender.write_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to the internal buffer and queue provided frame. The encoded frame is made available
+by the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<a class="reference internal" href="#hdlc.Frame" title="hdlc.Frame"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.Frame</span></code></a>) – The frame to queue.</p></li>
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a>) – The data to be included in the frame.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Byte offset for the data in the buffer.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of data in the buffer. Default is rest of buffer from specified offset.</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – A higher number puts the frame at front of the internal queue and will be returned
+before frames with lower priority when calling the <a class="reference internal" href="#hdlc.Sender.read" title="hdlc.Sender.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hdlc.Sender.read()</span></code></a> method.</p></li>
+<li><p><strong>retry</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the frame should be held in queue after it has been read. Frames need to
+be explicitly removed otherwise they stay in the queue indefinitly. A high priority frame
+which is retryable will block the head of the queue untill it is removed or a higher
+priority frame is added.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> - If there is no more space in the internal buffer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hdlc.protocol">
+<span class="sig-prename descclassname"><span class="pre">hdlc.</span></span><span class="sig-name descname"><span class="pre">protocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_timeout_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hdlc.protocol" title="Link to this definition">¶</a></dt>
+<dd><p>Create a receiver and sender pair for respectively decoding and encoding HDLC frames.
+The pair is linked, the sender might have queued up messages pending depending on what is written
+to the receiver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the instance should act as a master node and initiate the communication
+with the remote node.</p></li>
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – If master is True then this specifies the address of the remote slave node
+(since master nodes do not have explicit addresses). If master is False then this is the address
+of current slave node.</p></li>
+<li><p><strong>buffer_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Length of internal receiver and sender buffers. Writing beyond the specified length
+will result in an error.</p></li>
+<li><p><strong>write_timeout_ms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The write timeout for messages that require acknowledgement, e.g. information frames.</p></li>
+<li><p><strong>write_retries</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of times to retry a message after the initial write has failed. The message will
+be queued up in the sender again after write_timeout_ms has been reached. If the retry limit is also reached
+<a class="reference internal" href="#hdlc.TimeoutError" title="hdlc.TimeoutError"><code class="xref py py-class docutils literal notranslate"><span class="pre">hdlc.TimeoutError</span></code></a> is raised instead.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Which link configuration mode to use (currently unused).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, Mirza Kapetanovic.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
