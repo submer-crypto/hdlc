@@ -19,7 +19,11 @@ SUPERVISORY_REJECT = 0x01
 #: only requests the specific information frame to be resent.
 SUPERVISORY_SELECTIVE_REJECT = 0x03
 
+#: Disconnected mode. Sent by the slave when in disconnected mode (default mode on startup)
+#: in response to all frame requests except a set mode command.
 UNNUMBERED_DISCONNECTED_MODE = 0x03
+#: Acknowledge mode response. Sent by the slave on an acceptable set mode command,
+#: indicating the slave has entered normal operation mode.
 UNNUMBERED_ACKNOWLEDGE = 0x0C
 UNNUMBERED_SET_NORMAL_RESPONSE_MODE = 0x08
 UNNUMBERED_SET_ASYNCHRONOUS_RESPONSE_MODE = 0x07
