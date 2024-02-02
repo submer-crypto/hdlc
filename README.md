@@ -2,6 +2,10 @@
 
 A Python library for encoding and decoding [HDLC](https://en.wikipedia.org/wiki/High-Level_Data_Link_Control) frames and facilitating transport agnostic communication. Based on the C++ implementation [bang-olufsen/hdlcpp](https://github.com/bang-olufsen/hdlcpp) but is not necessarily compatible with the C++ library.
 
+This library has been tested with MicroPython on Raspberry Pi RP2040 microcontroller.
+
+Detailed API documentation is available [here](https://submer-crypto.github.io/hdlc).
+
 ## Usage
 
 Initiate a receiver and sender pair using the `protocol` function for respectively decoding and encoding HDLC frames. The pair is linked, the sender might have queued up messages pending depending on what is written to the receiver.
